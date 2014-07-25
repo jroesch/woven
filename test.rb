@@ -1,7 +1,7 @@
-require './future'
+require 'lib/future'
 require 'minitest/autorun'
-require 'minitest/spec'
 require 'minitest/pride'
+require 'minitest/spec'
 require 'pry'
 
 describe "A Promise" do

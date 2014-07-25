@@ -34,16 +34,18 @@ class Promise
     @future = Future.new(self)
   end
 
-  def self.fail(error)
-    if error.is_a?(StandardError)
-      raise "Not Yet!"
-    else
-      raise TypeError, "A Promise must fail with a subtype of StandardError"
+  class << self
+    def self.fail(error)
+      if error.is_a?(StandardError)
+        raise "Not Yet!"
+      else
+        raise TypeError, "A Promise must fail with a subtype of StandardError"
+      end
     end
-  end
 
-  def self.succeed(value)
-    raise "not yet implemented"
+    def self.succeed(value)
+      raise "not yet implemented"
+    end
   end
 
   def fulfill(result)
@@ -75,7 +77,7 @@ class Promise
     end
   end
 
-private
+  private
   # I think this is the MVP but we should replace this with an Executor/ExecutionContext like abstraction
   # for scheduling work across threads and fibers, more thought is needed here
   
@@ -88,6 +90,7 @@ private
   def fulfilled?
     !@result.nil?
   end
+
 end
 
 module Scheduler
@@ -132,11 +135,13 @@ class ExecutionContext
       end
   end
 
-private
+  private
+
   def resume_scheduler
     Fiber.current != @root_fiber
     @root_fiber.transfer
   end
+
 end
 
 class Future < Awaitable
@@ -177,9 +182,9 @@ class Future < Awaitable
   def value
     @promise.value
   end
+
 end
 
 def future(&body)
   Future.new(Promise.new, &body).run
 end
-
