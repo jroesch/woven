@@ -1,13 +1,14 @@
-require 'eventmachine'
 require 'em-synchrony'
-require 'fiber'
 require "em-synchrony/em-http"
+require 'eventmachine'
+require 'fiber'
 require 'pry'
 
 # Logic for blocking and durations over Deferrables
 
 class Awaitable
   include EventMachine::Deferrable
+
   def initialize(deferrable)
     @deferrable = deferrable
   end
@@ -29,13 +30,13 @@ class Promise
   attr_reader :future
   
   def initialize
-    @result = nil
+    @future  = Future.new(self)
+    @result  = nil
     @yielded = false
-    @future = Future.new(self)
   end
 
   class << self
-    def self.fail(error)
+    def fail(error)
       if error.is_a?(StandardError)
         raise "Not Yet!"
       else
@@ -43,7 +44,7 @@ class Promise
       end
     end
 
-    def self.succeed(value)
+    def succeed(value)
       raise "not yet implemented"
     end
   end
