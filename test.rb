@@ -20,19 +20,12 @@ describe "A Promise" do
   end
 end
 
-describe "ExecutionContext" do
-  setup do
-    @ec = ExecutionContext.new(:fibers, :fifo)
-  end
-
-  teardown do
-    @ec.clear!
-  end
-
-  it "should execute a task" do
-    @ec.execute()
-  end
-end
+# describe "ExecutionContext" do
+#   it "should execute a task" do
+#     skip "skip"
+#     @ec.execute()
+#   end
+# end
 
 describe "A Future" do
   it "should run and complete" do
@@ -52,23 +45,26 @@ describe "A Future" do
     skip "foo"
     ordering = []
     # set them up to execute in reverse order
-    one = future do
-      Fiber.yield
-      ordering << 1
-    end
 
-    two = future do
-      Fiber.yield
-      ordering << 2
-    end
+    Future.run do
+      binding.pry
+      
+      one = future do
+        EventMachine.interrupt
+        ordering << 1
+      end
 
-    three = future do
-      ordering << 3
-    end
-    
-    while ordering.length < 3; end
-    
+      two = future do
+        ordering << 2
+      end
+
+      three = future do
+        ordering << 3
+      end
+
     # execute them in order, if we aren't using fibers each being evaluated in order will cause them to sequentially evaluate with the sleeps
-    ordering.must_equal([3,2,1])
+      while ordering.length < 3; end
+      assert_equal ordering, [3,2,1]
+    end
   end
 end

@@ -1,7 +1,29 @@
+require 'eventmachine'
 require 'em-synchrony'
 require 'fiber'
+require "em-synchrony/em-http"
+require 'pry'
 
-class Awaitable; end
+# Logic for blocking and durations over Deferrables
+
+class Awaitable
+  include EventMachine::Deferrable
+  def initialize(deferrable)
+    @deferrable = deferrable
+  end
+  
+  def block_on_value
+    f = Fiber.current
+    # interface for awaiting defferables
+    # simly pass a deferrabe and when it is done we will resume the current thread and pass back the result
+    @deferrable.callback { |result| f.resume(result) }
+    @deferrable.errback { } # issues with errback? look at exp.
+    binding.pry
+    Fiber.yield
+  end
+end
+
+EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://google.com").aget); await.block_on_value; EM.stop }
 
 class Promise
   attr_reader :future
@@ -41,7 +63,7 @@ class Promise
   end
 
   def value
-    unless fulfilled?
+    until fulfilled?
       Fiber.yield
     end
     
@@ -117,7 +139,15 @@ private
   end
 end
 
-class Future
+class Future < Awaitable
+  def self.run
+    @result = nil
+    EventMachine.synchrony do
+      @result = yield
+    end
+    @result
+  end
+
   def self.all(*args)
     future { args.map { |arg| arg.value } }
   end
