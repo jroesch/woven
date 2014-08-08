@@ -21,13 +21,13 @@ class Awaitable
     f = Fiber.current
 
     @deferrable.callback { |result| f.resume(result) }
-    @deferrable.errback { |error| p "Received error: #{error}!" } # issues with errback? look at exp.
+    @deferrable.errback { |error| p "Received error: #{error}!"; f.resume } # issues with errback? look at exp.
     binding.pry
     Fiber.yield
   end
 end
 
-EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://google.com").aget); await.block_on_value; p "we got here"; EM.stop }
+EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://go---ogle.com").aget); await.block_on_value; EM.stop }
 
 class Promise
   attr_reader :future
