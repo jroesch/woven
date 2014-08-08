@@ -4,6 +4,8 @@ require 'eventmachine'
 require 'fiber'
 require 'pry'
 
+$LOAD_PATH.unshift('lib')
+
 # Logic for blocking and durations over Deferrables
 
 class Awaitable
@@ -13,18 +15,19 @@ class Awaitable
     @deferrable = deferrable
   end
   
+  # interface for awaiting defferables
+  # simply pass a deferrable and when it is done we will resume the current thread and pass back the result
   def block_on_value
     f = Fiber.current
-    # interface for awaiting defferables
-    # simly pass a deferrabe and when it is done we will resume the current thread and pass back the result
+
     @deferrable.callback { |result| f.resume(result) }
-    @deferrable.errback { } # issues with errback? look at exp.
+    @deferrable.errback { |error| p "Received error: #{error}!" } # issues with errback? look at exp.
     binding.pry
     Fiber.yield
   end
 end
 
-EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://google.com").aget); await.block_on_value; EM.stop }
+EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://google.com").aget); await.block_on_value; p "we got here"; EM.stop }
 
 class Promise
   attr_reader :future
@@ -146,16 +149,18 @@ class ExecutionContext
 end
 
 class Future < Awaitable
-  def self.run
-    @result = nil
-    EventMachine.synchrony do
-      @result = yield
+  class << self
+    def run
+      @result = nil
+      EventMachine.synchrony do
+        @result = yield
+      end
+      @result
     end
-    @result
-  end
 
-  def self.all(*args)
-    future { args.map { |arg| arg.value } }
+    def all(*args)
+      future { args.map { |arg| arg.value } }
+    end
   end
 
   def initialize(promise, &body)

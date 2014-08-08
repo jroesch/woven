@@ -1,4 +1,4 @@
-require 'lib/future'
+require_relative 'lib/future'
 require 'minitest/autorun'
 require 'minitest/pride'
 require 'minitest/spec'
