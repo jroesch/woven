@@ -22,12 +22,11 @@ class Awaitable
 
     @deferrable.callback { |result| f.resume(result) }
     @deferrable.errback { |error| p "Received error: #{error}!"; f.resume } # issues with errback? look at exp.
-    binding.pry
     Fiber.yield
   end
 end
 
-EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://go---ogle.com").aget); await.block_on_value; EM.stop }
+EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://google.com").aget); await.block_on_value; EM.stop }
 
 class Promise
   attr_reader :future
@@ -152,8 +151,8 @@ class Future < Awaitable
   class << self
     def run
       @result = nil
-      EventMachine.synchrony do
-        @result = yield
+      EM.synchrony do
+        @result = yield # TODO: what are you trying to yield right here?
       end
       @result
     end
@@ -163,9 +162,20 @@ class Future < Awaitable
     end
   end
 
+  attr_reader :promise
+
   def initialize(promise, &body)
     @promise = promise
     @body = body
+  end
+
+  def on_complete
+  end
+
+  def on_failure
+  end
+
+  def on_success
   end
 
   # Kick off Fiber then return a reference to itself?
@@ -194,3 +204,5 @@ end
 def future(&body)
   Future.new(Promise.new, &body).run
 end
+
+Future.run
