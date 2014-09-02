@@ -1,4 +1,4 @@
-require File.expand_path('../lib/version', __FILE__)
+require File.expand_path('../lib/woven/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.name        = 'woven'
