@@ -1,7 +1,7 @@
-require 'em-synchrony'
-require "em-synchrony/em-http"
 require 'eventmachine'
+require 'em-synchrony'
 require 'fiber'
+require "em-synchrony/em-http"
 require 'pry'
 
 $LOAD_PATH.unshift('lib')
@@ -16,7 +16,7 @@ class Awaitable
   end
   
   # interface for awaiting defferables
-  # simply pass a deferrable and when it is done we will resume the current thread and pass back the result
+
   def block_on_value
     f = Fiber.current
 
@@ -30,7 +30,7 @@ EM.synchrony { await = Awaitable.new(EventMachine::HttpRequest.new("http://googl
 
 class Promise
   attr_reader :future
-  
+
   def initialize
     @future  = Future.new(self)
     @result  = nil
@@ -52,7 +52,7 @@ class Promise
   end
 
   def fulfill(result)
-    @result = result 
+    @result = result
   end
 
   def success?
@@ -71,7 +71,7 @@ class Promise
     until fulfilled?
       Fiber.yield
     end
-    
+
     case @result
     when StandardError
       raise @result
@@ -83,7 +83,7 @@ class Promise
   private
   # I think this is the MVP but we should replace this with an Executor/ExecutionContext like abstraction
   # for scheduling work across threads and fibers, more thought is needed here
-  
+
   # def check_progress(original_fiber)
   #  if fulfillled? && original_fiber.alive? && original_fiber != Fiber.current && @yielded
   #    original_fiber.resume
@@ -105,7 +105,7 @@ end
 class ExecutionContext
   def initialize(root_fiber, backing, scheduling)
     @root_fiber = root_fiber
-    
+
     case backing
     when :fibers
       use_scheduling!(scheduling)
@@ -113,12 +113,12 @@ class ExecutionContext
       raise ArgumentError, "unsupported execution model: #{backing}"
     end
   end
-  
+
   def execute(task)
     @queue.empty?
     resume_scheduler
   end
-  
+
   def run
     while !@queue.empty?
       task = @queue.pop
@@ -130,7 +130,7 @@ class ExecutionContext
   end
 
   def use_scheduling!(scheduling)
-    @scheduler = 
+    @scheduler =
       case scheduling
       when :fifo
       else
@@ -153,13 +153,12 @@ class Future < Awaitable
       @result = nil
       EM.synchrony do
         @result = yield # TODO: what are you trying to yield right here?
-      end
-      @result
     end
+    @result
+  end
 
     def all(*args)
       future { args.map { |arg| arg.value } }
-    end
   end
 
   attr_reader :promise
@@ -180,17 +179,17 @@ class Future < Awaitable
 
   # Kick off Fiber then return a reference to itself?
   def run
-    promise = Promise.new 
-    if @body 
+    promise = Promise.new
+    if @body
       Fiber.new do
         begin
           result = @body.call
           promise.fulfill(result)
         rescue StandardError => e
           promise.fulfill(e)
-        end 
+        end
       end.resume
-    end 
+    end
 
     promise.future
   end
@@ -205,4 +204,33 @@ def future(&body)
   Future.new(Promise.new, &body).run
 end
 
-Future.run
+# f = future do
+#   async_thing
+#   async_thing
+#   async_thing
+# end
+#
+# g = future do
+#   async_thing
+#   async_thing
+# end
+# 
+# f.value + g.value
+# f + g # => new future that blocks on both things and computes result
+#
+# def method_missing(meth, *args, &block)
+#   if self.is_a?(Future) && self.respond_to?(meth)
+#     future do
+#       unpacked_args = args.map do |arg|
+#         if arg.is_a?(Future)
+#           arg.value
+#         else
+#           arg
+#         end
+#       end
+#
+#       self.value.send(meth, *unpacked_args, &block)
+#     end
+#   else
+#     raise NoMethodError, "undefined method `#{meth} for #{self}"
+# end
