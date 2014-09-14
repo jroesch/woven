@@ -149,16 +149,18 @@ end
 
 class Future < Awaitable
   class << self
-    def run
-      @result = nil
+    def run(&body)
+      result = nil
       EM.synchrony do
-        @result = yield # TODO: what are you trying to yield right here?
+        result = body.call
+        EM.stop
+      end
+      result
     end
-    @result
-  end
 
     def all(*args)
       future { args.map { |arg| arg.value } }
+    end
   end
 
   attr_reader :promise
