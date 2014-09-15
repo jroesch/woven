@@ -42,15 +42,29 @@ describe "A Future" do
   end
 
   it "slice from a list with map_f" do
+    two = []
     Future.run do
       one = future do
         [1,2,3,4,5] 
       end
 
-      two = one.map_f { |n| n.slice(0,2) }
+      two = one.f_map { |n| n.slice(0,2) }
     end
 
     assert_equal [1,2], two
+  end
+
+  it "actually map" do
+    two = []
+    Future.run do
+      one = future do
+        [1,2,3,4,5]
+      end
+      
+      two = one.map { |n| n + 1 }
+    end
+
+    assert_equal [2,3,4,5,6], two.value
   end
 
   it "should create be able to create and user a future via" do
@@ -74,7 +88,7 @@ describe "A Future" do
         ordering << 3
       end
 
-    # execute them in order, if we aren't using fibers each being evaluated in order will cause them to sequentially evaluate with the sleeps
+      # execute them in order, if we aren't using fibers each being evaluated in order will cause them to sequentially evaluate with the sleeps
       3.times do
         EM::Synchrony.sleep(1)
 

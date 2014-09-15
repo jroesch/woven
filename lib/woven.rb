@@ -21,7 +21,7 @@ class Awaitable
     f = Fiber.current
 
     @deferrable.callback { |result| f.resume(result) }
-    @deferrable.errback { |error| p "Received error: #{error}!"; f.resume } # issues with errback? look at exp.
+    @deferrable.errback  { |error| p "Received error: #{error}!"; f.resume }
     Fiber.yield
   end
 end
@@ -171,15 +171,17 @@ class Future < Awaitable
   end
 
   def on_complete
+    raise "not yet implemented"
   end
 
   def on_failure
+    raise "not yet implemented"
   end
 
   def on_success
+    raise "not yet implemented"
   end
 
-  # Kick off Fiber then return a reference to itself?
   def run
     promise = Promise.new
     if @body
@@ -200,8 +202,27 @@ class Future < Awaitable
     @promise.value
   end
 
-  def map_f(&body)
-    future { body.call(self.value) }
+  def method_missing(method_name, *args, &block)
+    if self.is_a?(Future) && !self.respond_to?(method_name)
+      future do
+        unpacked_args = args.map do |arg|
+          if args.is_a?(Future)
+            arg.value
+          else
+            arg
+          end
+        end
+
+        self.value.send(method_name, *unpacked_args, &block)
+      end
+
+    else
+      raise NoMethodError, "Undefined method #{meth} for #{self}"
+    end
+  end
+
+  def f_map(&body)
+    f = future { body.call(self.value) }
   end
 
 end
@@ -210,22 +231,13 @@ def future(&body)
   Future.new(Promise.new, &body).run
 end
 
+#n = Future[List]
+#
+#Good
+#f.f_map { |n| n + 1 }
+#
+#Bad
+#f.f_map { |n| n.each { |val| val + 1} }
+
 # f.value + g.value
 # f + g # => new future that blocks on both things and computes result
-#
-# def method_missing(meth, *args, &block)
-#   if self.is_a?(Future) && self.respond_to?(meth)
-#     future do
-#       unpacked_args = args.map do |arg|
-#         if arg.is_a?(Future)
-#           arg.value
-#         else
-#           arg
-#         end
-#       end
-#
-#       self.value.send(meth, *unpacked_args, &block)
-#     end
-#   else
-#     raise NoMethodError, "undefined method `#{meth} for #{self}"
-# end
