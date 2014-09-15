@@ -41,6 +41,18 @@ describe "A Future" do
     Future.all(future { 1 }, future { 2 }, future { 3 }).value.must_equal [1,2,3]
   end
 
+  it "slice from a list with map_f" do
+    Future.run do
+      one = future do
+        [1,2,3,4,5] 
+      end
+
+      two = one.map_f { |n| n.slice(0,2) }
+    end
+
+    assert_equal [1,2], two
+  end
+
   it "should create be able to create and user a future via" do
     ordering = []
     # set them up to execute in reverse order

@@ -200,23 +200,16 @@ class Future < Awaitable
     @promise.value
   end
 
+  def map_f(&body)
+    future { body.call(self.value) }
+  end
+
 end
 
 def future(&body)
   Future.new(Promise.new, &body).run
 end
 
-# f = future do
-#   async_thing
-#   async_thing
-#   async_thing
-# end
-#
-# g = future do
-#   async_thing
-#   async_thing
-# end
-# 
 # f.value + g.value
 # f + g # => new future that blocks on both things and computes result
 #
