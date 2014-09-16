@@ -38,12 +38,12 @@ describe "A Future" do
   
 
   it "#all method should sequence a set of futures" do
-    Future.all(future { 1 }, future { 2 }, future { 3 }).value.must_equal [1,2,3]
+    Woven::Future.all(future { 1 }, future { 2 }, future { 3 }).value.must_equal [1,2,3]
   end
 
   it "slice from a list with map_f" do
     two = []
-    Future.run do
+    Woven::Future.run do
       one = future do
         [1,2,3,4,5] 
       end
@@ -51,12 +51,12 @@ describe "A Future" do
       two = one.f_map { |n| n.slice(0,2) }
     end
 
-    assert_equal [1,2], two
+    assert_equal [1,2], two.value
   end
 
   it "should map over a list" do
     two = []
-    Future.run do
+    Woven::Future.run do
       one = future do
         [1,2,3,4,5]
       end
@@ -69,7 +69,7 @@ describe "A Future" do
 
   it "should concatenate a string" do
     two = ""
-    Future.run do
+    Woven::Future.run do
       one = future do
         "hello"
       end
@@ -82,7 +82,7 @@ describe "A Future" do
 
   it "should add two futures together" do
     three = 0
-    Future.run do
+    Woven::Future.run do
       one = future do
         1
       end
@@ -91,17 +91,15 @@ describe "A Future" do
         2
       end
 
-      binding.pry
       three = one + two
     end
 
-    binding.pry
     assert_equal 3, three.value
   end
 
   it "should multiply the value" do
     two = 0
-    Future.run do
+    Woven::Future.run do
       one = future do
         1
       end
@@ -116,7 +114,7 @@ describe "A Future" do
     ordering = []
 
     # set them up to execute in reverse order
-    Future.run do
+    Woven::Future.run do
       one = future do
         EM::Synchrony.sleep(0.5)
         ordering << 1
