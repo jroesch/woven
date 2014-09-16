@@ -47,7 +47,7 @@ class Promise
     end
 
     def succeed(value)
-      raise "not yet implemented"
+      raise "Not yet implemented"
     end
   end
 
@@ -93,7 +93,6 @@ class Promise
   def fulfilled?
     !@result.nil?
   end
-
 end
 
 module Scheduler
@@ -144,7 +143,6 @@ class ExecutionContext
     Fiber.current != @root_fiber
     @root_fiber.transfer
   end
-
 end
 
 class Future < Awaitable
@@ -171,15 +169,15 @@ class Future < Awaitable
   end
 
   def on_complete
-    raise "not yet implemented"
+    raise "Not yet implemented"
   end
 
   def on_failure
-    raise "not yet implemented"
+    raise "Not yet implemented"
   end
 
   def on_success
-    raise "not yet implemented"
+    raise "Not yet implemented"
   end
 
   def run
@@ -224,7 +222,6 @@ class Future < Awaitable
   def f_map(&body)
     f = future { body.call(self.value) }
   end
-
 end
 
 def future(&body)

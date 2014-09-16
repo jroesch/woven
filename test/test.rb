@@ -54,7 +54,7 @@ describe "A Future" do
     assert_equal [1,2], two
   end
 
-  it "actually map" do
+  it "should map over a list" do
     two = []
     Future.run do
       one = future do
@@ -67,12 +67,37 @@ describe "A Future" do
     assert_equal [2,3,4,5,6], two.value
   end
 
+  it "should concatenate a string" do
+    two = ""
+    Future.run do
+      one = future do
+        "hello"
+      end
+
+      two = one + ", world!"
+    end
+
+    assert_equal "hello, world!", two.value
+  end
+
+  it "should multiply the value" do
+    two = 0
+    Future.run do
+      one = future do
+        1
+      end
+
+      two = one * 2
+    end
+
+    assert_equal 2, two.value
+  end
+
   it "should create be able to create and user a future via" do
     ordering = []
-    # set them up to execute in reverse order
 
+    # set them up to execute in reverse order
     Future.run do
-      
       one = future do
         EM::Synchrony.sleep(0.5)
         ordering << 1
