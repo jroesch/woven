@@ -21,7 +21,7 @@ class Awaitable
     f = Fiber.current
 
     @deferrable.callback { |result| f.resume(result) }
-    @deferrable.errback  { |error| p "Received error: #{error}!"; f.resume }
+    @deferrable.errback  { |error| p "Received error: #{error}!"; f.resume(error) }
     Fiber.yield
   end
 end
@@ -204,7 +204,7 @@ class Future < Awaitable
     if self.is_a?(Future) && !self.respond_to?(method_name)
       future do
         unpacked_args = args.map do |arg|
-          if args.is_a?(Future)
+          if arg.is_a?(Future)
             arg.value
           else
             arg
@@ -227,14 +227,3 @@ end
 def future(&body)
   Future.new(Promise.new, &body).run
 end
-
-#n = Future[List]
-#
-#Good
-#f.f_map { |n| n + 1 }
-#
-#Bad
-#f.f_map { |n| n.each { |val| val + 1} }
-
-# f.value + g.value
-# f + g # => new future that blocks on both things and computes result

@@ -80,6 +80,25 @@ describe "A Future" do
     assert_equal "hello, world!", two.value
   end
 
+  it "should add two futures together" do
+    three = 0
+    Future.run do
+      one = future do
+        1
+      end
+
+      two = future do
+        2
+      end
+
+      binding.pry
+      three = one + two
+    end
+
+    binding.pry
+    assert_equal 3, three.value
+  end
+
   it "should multiply the value" do
     two = 0
     Future.run do
