@@ -31,4 +31,22 @@ describe "A Channel" do
 
     assert_equal 2, value
   end
+
+  it "should perfor" do
+    c = Channel.new
+    value = nil
+
+    Woven.run do
+      value = Woven::Future.select {
+        future { Woven.sleep(0.25); c.send "ello" }
+        future { Woven.sleep(0.1); c.send "there" }
+        future { Woven.sleep(0.50); c.send "Woven" }
+
+        Woven.sleep(1)
+        c.receive
+      }
+    end
+
+    assert_equal "there", value
+  end
 end

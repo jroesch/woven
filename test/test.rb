@@ -7,5 +7,5 @@ require 'pry'
 require 'webmock/minitest'
 
 require_relative './channel_test'
-require_relative './future_test'
-require_relative './promise_test'
+#require_relative './future_test'
+#require_relative './promise_test'

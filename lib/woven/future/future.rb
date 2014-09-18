@@ -1,12 +1,16 @@
-require_relative '../awaitable'
 require 'em-synchrony'
 require 'fiber'
+require_relative '../awaitable'
 
 module Woven
   class Future < Awaitable
     class << self
       def sequence(args) 
         future { args.map { |arg| arg.value } }
+      end
+
+      def select(&block)
+        block.call
       end
     end
 
