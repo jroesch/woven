@@ -5,15 +5,6 @@ require 'fiber'
 module Woven
   class Future < Awaitable
     class << self
-      def run(&body)
-        result = nil
-        EM.synchrony do
-          result = body.call
-          EM.stop
-        end
-        result
-      end
-
       def all(*args)
         future { args.map { |arg| arg.value } }
       end

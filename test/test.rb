@@ -31,7 +31,7 @@ describe "A Future" do
   failed_future = nil 
 
   it "should return a Future with an exception" do
-    Woven::Future.run do
+    Woven.run do
       failed_future = Woven::Promise.failed(FailedWithError.new("yolo")) 
     end
 
@@ -53,7 +53,7 @@ describe "A Future" do
 
   it "should slice from a list with map_f" do
     two = []
-    Woven::Future.run do
+    Woven.run do
       one = future { [1,2,3,4,5] }
 
       two = one.f_map { |n| n.slice(0,2) }
@@ -64,7 +64,7 @@ describe "A Future" do
 
   it "should map over a list" do
     two = []
-    Woven::Future.run do
+    Woven.run do
       one = future { [1,2,3,4,5] }
       
       two = one.map { |n| n + 1 }
@@ -75,7 +75,7 @@ describe "A Future" do
 
   it "should concatenate a string" do
     two = ""
-    Woven::Future.run do
+    Woven.run do
       one = future { "hello" }
 
       two = one + ", world!"
@@ -86,7 +86,7 @@ describe "A Future" do
 
   it "should add two futures together" do
     three = 0
-    Woven::Future.run do
+    Woven.run do
       one = future { 1 }
       two = future { 2 }
       three = one + two
@@ -97,7 +97,7 @@ describe "A Future" do
 
   it "should multiply the future" do
     two = 0
-    Woven::Future.run do
+    Woven.run do
       one = future { 1 }
       two = one * 2
     end
@@ -109,7 +109,7 @@ describe "A Future" do
     ordering = []
 
     # set them up to execute in reverse order
-    Woven::Future.run do
+    Woven.run do
       one = future do
         EM::Synchrony.sleep(0.5)
         ordering << 1
@@ -134,5 +134,40 @@ describe "A Future" do
     end
 
     assert_equal ordering, [2, 1, 3]
+  end
+end
+
+describe "A Channel" do
+  it "should have a message on the queue" do
+    c = Channel.new
+    value = []
+
+    Woven.run do
+      future { c.send(1); c.send(2); c.send(3) }  
+      future { value << c.receive; value << c.receive; value << c.receive }
+    end
+
+    assert_equal [1,2,3], value
+    assert_equal true, c.empty?
+  end
+
+  it "should enqueue messages out of order" do
+    c = Channel.new
+    value = nil
+
+    Woven.run do 
+      future { EM::Synchrony.sleep(0.5); c.send(1) }
+      future { EM::Synchrony.sleep(0.25); c.send(2) }
+      
+      loop do
+        EM::Synchrony.sleep(1)
+        if c.size == 2
+          future { value = c.receive }
+          break
+        end
+      end
+    end
+
+    assert_equal 2, value
   end
 end

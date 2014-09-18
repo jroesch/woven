@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
                         interface is based off of Scala's Futures and Promises.}
   gem.authors      = ['Jared Roesch', 'Pete Cruz']
   gem.email        = ['roeschinc@gmail.com', 'iPetesta@gmail.com']
-  gem.homepage     = 'https://github.com/jroesch/debugging-tools'
+  gem.homepage     = 'https://github.com/jroesch/woven'
   gem.license      = 'MIT'
   gem.files        = Dir['lib/**/*']
   gem.require_paths = ['lib']
