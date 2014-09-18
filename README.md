@@ -12,13 +12,8 @@ Here is an example of how to use futures in Woven.
 ```
 f3 = ""
 Woven::Future.run do
-  f1 = future do
-    "Hello, " 
-  end
-
-  f2 = future do
-    "world!"
-  end
+  f1 = future { "Hello, " }
+  f2 = future { "world!" }
 
   f3 = f1 + f2
 end
@@ -26,5 +21,5 @@ end
 
 To get access to the value within the future.
 ```
-f3.value
+f3.value => "Hello, world!"
 ```
