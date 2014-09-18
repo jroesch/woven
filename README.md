@@ -10,7 +10,7 @@ Futures are composable so new futures can created in an asynchronous manner.
 ### An example of using Woven with Futures
 Here is an example of how to use futures in Woven.
 ```ruby
-f3 = ""
+f3 = nil
 Woven.run do
   f1 = future { "Hello, " }
   f2 = future { "world!" }

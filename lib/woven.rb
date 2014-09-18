@@ -1,7 +1,7 @@
 require 'eventmachine'
 require 'em-synchrony'
-require 'fiber'
 require "em-synchrony/em-http"
+require 'fiber'
 require 'pry'
 require_relative './woven/awaitable'
 require_relative './woven/channel'
