@@ -2,7 +2,7 @@
 
 ## What is Woven?
 
-Woven is built on top of `em_synchrony` in order to take advantage of its event-drive I/O and concurrency model.
+Woven is built on top of `em_synchrony` in order to take advantage of its event-driven I/O and concurrency model.
 It provides a clean interface for using Promises's and Future's similar to Scala and JavaScript in an asychronous style.
 
 Futures are composable so new futures can created in an asynchronous manner.

@@ -1,4 +1,4 @@
-require_relative '../awaitable/awaitable'
+require_relative '../awaitable'
 require 'em-synchrony'
 require 'fiber'
 
@@ -18,8 +18,6 @@ module Woven
         future { args.map { |arg| arg.value } }
       end
     end
-
-    attr_reader :promise
 
     def initialize(promise, &body)
       @promise = promise

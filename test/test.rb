@@ -28,25 +28,33 @@ end
 # end
 
 describe "A Future" do
-  it "should run and complete" do
-    f = future do
-      1
+  failed_future = nil 
+
+  it "should return a Future with an exception" do
+    Woven::Future.run do
+      failed_future = Woven::Promise.failed(FailedWithError.new("yolo")) 
     end
+
+    binding.pry
+    assert_raises FailedWithError do
+      puts failed_future.value
+    end
+  end
+
+  it "should run and complete" do
+    f = future { 1 }
 
     f.value.must_equal(1)
   end
   
-
   it "#all method should sequence a set of futures" do
     Woven::Future.all(future { 1 }, future { 2 }, future { 3 }).value.must_equal [1,2,3]
   end
 
-  it "slice from a list with map_f" do
+  it "should slice from a list with map_f" do
     two = []
     Woven::Future.run do
-      one = future do
-        [1,2,3,4,5] 
-      end
+      one = future { [1,2,3,4,5] }
 
       two = one.f_map { |n| n.slice(0,2) }
     end
@@ -57,9 +65,7 @@ describe "A Future" do
   it "should map over a list" do
     two = []
     Woven::Future.run do
-      one = future do
-        [1,2,3,4,5]
-      end
+      one = future { [1,2,3,4,5] }
       
       two = one.map { |n| n + 1 }
     end
@@ -70,9 +76,7 @@ describe "A Future" do
   it "should concatenate a string" do
     two = ""
     Woven::Future.run do
-      one = future do
-        "hello"
-      end
+      one = future { "hello" }
 
       two = one + ", world!"
     end
@@ -83,34 +87,25 @@ describe "A Future" do
   it "should add two futures together" do
     three = 0
     Woven::Future.run do
-      one = future do
-        1
-      end
-
-      two = future do
-        2
-      end
-
+      one = future { 1 }
+      two = future { 2 }
       three = one + two
     end
 
     assert_equal 3, three.value
   end
 
-  it "should multiply the value" do
+  it "should multiply the future" do
     two = 0
     Woven::Future.run do
-      one = future do
-        1
-      end
-
+      one = future { 1 }
       two = one * 2
     end
 
     assert_equal 2, two.value
   end
 
-  it "should create be able to create and user a future via" do
+  it "should create futures and execute them out of order" do
     ordering = []
 
     # set them up to execute in reverse order

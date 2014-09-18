@@ -1,18 +1,31 @@
-require_relative '../future/future'
+require_relative './future/future'
+
+class FailedWithError < StandardError;
+  def initialize(exception)
+    super("An exception has been thrown: #{exception}")
+  end
+end
 
 module Woven
   class Promise
     class << self
-      def fail(error)
-        if error.is_a?(StandardError)
-          raise "Not Yet!"
+      def failed(value)
+        exception = case value
+        when StandardError
+          value 
         else
-          raise TypeError, "A Promise must fail with a subtype of StandardError"
+         FailedWithError.new(value) 
         end
+
+        promise = Promise.new
+        promise.fulfill(exception)
+        promise.future
       end
 
       def succeed(value)
-        raise "Not yet implemented"
+        promise = Promise.new
+        promise.fulfill(value)
+        promise.future
       end
     end
 
@@ -25,6 +38,7 @@ module Woven
     end
 
     def fulfill(result)
+      raise "The promise has already been fulfilled!" if fulfilled?
       @result = result
     end
 

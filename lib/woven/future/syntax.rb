@@ -1,4 +1,4 @@
-require_relative '../awaitable/awaitable'
+require_relative '../awaitable'
 
 module Woven
   class Future < Awaitable

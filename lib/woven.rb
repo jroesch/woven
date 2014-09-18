@@ -3,10 +3,10 @@ require 'em-synchrony'
 require 'fiber'
 require "em-synchrony/em-http"
 require 'pry'
-require_relative './woven/awaitable/awaitable'
+require_relative './woven/awaitable'
 require_relative './woven/future/future'
 require_relative './woven/future/syntax'
-require_relative './woven/promise/promise'
+require_relative './woven/promise'
 
 
 
