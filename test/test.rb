@@ -1,7 +1,9 @@
+require 'fiber'
 require_relative '../lib/woven'
 require 'minitest/autorun'
 require 'minitest/pride'
 require 'minitest/spec'
+require 'webmock/minitest'
 require 'pry'
 
 describe "A Promise" do
@@ -35,7 +37,6 @@ describe "A Future" do
       failed_future = Woven::Promise.failed(FailedWithError.new("yolo")) 
     end
 
-    binding.pry
     assert_raises FailedWithError do
       puts failed_future.value
     end
@@ -47,15 +48,10 @@ describe "A Future" do
     f.value.must_equal(1)
   end
   
-  it "#all method should sequence a set of futures" do
-    Woven::Future.all(future { 1 }, future { 2 }, future { 3 }).value.must_equal [1,2,3]
-  end
-
   it "should slice from a list with map_f" do
     two = []
     Woven.run do
       one = future { [1,2,3,4,5] }
-
       two = one.f_map { |n| n.slice(0,2) }
     end
 
@@ -66,7 +62,6 @@ describe "A Future" do
     two = []
     Woven.run do
       one = future { [1,2,3,4,5] }
-      
       two = one.map { |n| n + 1 }
     end
 
@@ -77,7 +72,6 @@ describe "A Future" do
     two = ""
     Woven.run do
       one = future { "hello" }
-
       two = one + ", world!"
     end
 
@@ -108,32 +102,67 @@ describe "A Future" do
   it "should create futures and execute them out of order" do
     ordering = []
 
-    # set them up to execute in reverse order
+    # Set them up to execute in reverse order
     Woven.run do
       one = future do
-        EM::Synchrony.sleep(0.5)
+        Woven.sleep(0.5)
         ordering << 1
       end
 
       two = future do
-        EM::Synchrony.sleep(0.25)
+        Woven.sleep(0.25)
         ordering << 2
       end
 
       three = future do
-        EM::Synchrony.sleep(0.75)
+        Woven.sleep(0.75)
         ordering << 3
       end
 
-      # execute them in order, if we aren't using fibers each being evaluated in order will cause them to sequentially evaluate with the sleeps
+      # Execute them in order, if we aren't using fibers each being evaluated in order will cause them to sequentally evaluate with the sleeps
       3.times do
-        EM::Synchrony.sleep(1)
+        Woven.sleep(1)
 
         break if ordering.length == 3
       end
     end
 
     assert_equal ordering, [2, 1, 3]
+  end
+
+  it "should sequence Futures" do
+    list_of_futures = []
+    future_list = []
+    Woven.run do
+      list_of_futures << future { 1 }
+      list_of_futures << future { 2 }
+      list_of_futures << future { 3 }
+
+      future_list = Woven::Future.sequence(list_of_futures)
+    end
+
+    assert_equal Woven::Future, future_list.class
+    assert_equal [1,2,3], future_list.value
+  end
+
+  it "should blah" do
+    @status = nil
+    
+    Fiber.current
+
+    Woven.run do
+      http_request = future do 
+        @status = :Running
+        stub_request(:any, "http://google.com")
+        EventMachine::HttpRequest.new("http://google.com").get
+        @status = :Complete
+      end
+
+      assert_equal :Running, @status
+      Woven.sleep(1)
+    end
+
+    assert_equal :Complete, @status
   end
 end
 
@@ -156,11 +185,11 @@ describe "A Channel" do
     value = nil
 
     Woven.run do 
-      future { EM::Synchrony.sleep(0.5); c.send(1) }
-      future { EM::Synchrony.sleep(0.25); c.send(2) }
+      future { Woven.sleep(0.5); c.send(1) }
+      future { Woven.sleep(0.25); c.send(2) }
       
       loop do
-        EM::Synchrony.sleep(1)
+        Woven.sleep(1)
         if c.size == 2
           future { value = c.receive }
           break

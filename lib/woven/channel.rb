@@ -10,7 +10,6 @@ class Channel
   end
 
   def receive
-    binding.pry
     if @queue.empty?
       Fiber.yield
     else

@@ -15,5 +15,4 @@ Gem::Specification.new do |gem|
   gem.version      = Woven::VERSION
 
   gem.add_dependency 'em-synchrony'
-  gem.add_dependency 'fiber'
 end

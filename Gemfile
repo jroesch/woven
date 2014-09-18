@@ -4,8 +4,8 @@ gem 'em-synchrony'
 
 gem 'em-http-request'
 
-gem 'fiber'
-
 gem 'minitest'
+
+gem 'webmock'
 
 gem 'pry'

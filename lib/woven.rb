@@ -9,8 +9,6 @@ require_relative './woven/future/future'
 require_relative './woven/future/syntax'
 require_relative './woven/promise'
 
-
-
 $LOAD_PATH.unshift('lib')
 
 module Woven
@@ -23,6 +21,10 @@ module Woven
       EM.stop
     end
     result
+  end
+
+  def sleep(time)
+    EM::Synchrony.sleep(time)
   end
 end
 

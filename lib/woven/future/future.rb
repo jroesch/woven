@@ -5,7 +5,7 @@ require 'fiber'
 module Woven
   class Future < Awaitable
     class << self
-      def all(*args)
+      def sequence(args) 
         future { args.map { |arg| arg.value } }
       end
     end
