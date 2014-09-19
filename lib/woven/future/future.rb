@@ -8,9 +8,19 @@ module Woven
       def sequence(args) 
         future { args.map { |arg| arg.value } }
       end
-
-      def select(&block)
-        block.call
+      
+      # Look at select in Go?
+      def select(futures)
+        future do
+          # Create a promise and only write
+          chan = Channel.new
+        
+          futures.each do |future|
+            future.map_f { |v| chan.send(v) }
+          end
+          
+          chan.receive
+        end
       end
     end
 
