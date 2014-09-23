@@ -106,7 +106,7 @@ describe "A Future" do
       list_of_futures << future { 2 }
       list_of_futures << future { 3 }
 
-      future_list = Woven::Future.sequence(list_of_futures)
+      future_list = Woven::Future.sequence(*list_of_futures)
     end
 
     assert_equal Woven::Future, future_list.class

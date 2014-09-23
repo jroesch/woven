@@ -4,8 +4,18 @@ require_relative '../awaitable'
 
 module Woven
   class Future < Awaitable
+    @@current_fiber = nil
+
+    def self.current_fiber
+      @@current_fiber
+    end
+
+    def self.current_fiber=(current_fiber)
+      @@current_fiber = current_fiber
+    end
+
     class << self
-      def sequence(args) 
+      def sequence(*args) 
         future { args.map { |arg| arg.value } }
       end
       
@@ -51,6 +61,7 @@ module Woven
             err
           end
           promise.fulfill(result)
+          @@current_fiber.resume(result)
         end.resume
       end
 
